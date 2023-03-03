@@ -12,6 +12,7 @@ app = FastAPI()
 class HelloWorld:
     @app.get("/")
     def hello(self):
+        print("This was called!")
         return msg
 
     @app.get("/healthcheck")
