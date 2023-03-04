@@ -6,6 +6,7 @@ from ray.serve.drivers import DAGDriver
 from ray.serve.deployment_graph import InputNode
 from ray.serve.handle import RayServeDeploymentHandle
 from ray.serve.http_adapters import json_request
+from uuid import uuid4
 
 # These imports are used only for type hints:
 from typing import Dict, List
@@ -25,21 +26,19 @@ class FruitMarket:
             "ORANGE": orange_stand,
             "PEAR": pear_stand,
         }
-        self._id = 1
 
     async def check_price(self, fruit: str, amount: float) -> float:
         if fruit not in self.directory:
             return -1
         else:
-            request_id = f"req_{self._id}"
-            self._id += 1
+            request_id = f"req_{uuid4()}"
             fruit_stand = self.directory[fruit]
             ref: ray.ObjectRef = await fruit_stand.check_price.remote(
                 amount, request_id
             )
             result = await ref
             print(f"[{request_id}]: price for {amount} x {fruit}: {result}")
-            return result
+            return {"total": result, "request_id": request_id}
 
 
 @serve.deployment(user_config={"price": 3})
